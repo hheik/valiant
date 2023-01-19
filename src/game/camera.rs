@@ -42,6 +42,7 @@ fn camera_setup(mut commands: Commands) {
         Camera2dBundle {
             projection: OrthographicProjection {
                 window_origin: WindowOrigin::Center,
+                scale: 0.25,
                 ..default()
             },
             camera_2d: Camera2d {
