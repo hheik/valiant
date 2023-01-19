@@ -1,5 +1,7 @@
 use bevy::prelude::*;
 
+pub const TILE_SIZE: f32 = 8.0;
+
 pub struct AsciiPlugin;
 
 impl Plugin for AsciiPlugin {
@@ -19,7 +21,7 @@ fn load_ascii(
     let ascii = assets.load("sprites/ascii.png");
     let atlas = TextureAtlas::from_grid(
         ascii,
-        Vec2::splat(8.0),
+        Vec2::splat(TILE_SIZE),
         16,
         16,
         Some(Vec2::splat(2.0)),
