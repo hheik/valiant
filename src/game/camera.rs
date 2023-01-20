@@ -69,23 +69,27 @@ fn camera_system(
         None => return,
     };
 
+    let target = Vec3 {
+        z: 999.9,
+        ..target.translation
+    };
+
     for mut camera_transform in camera_query.iter_mut() {
-        let offset = Vec3::new(0.0, 0.0, 999.9);
         match follow.movement {
             FollowMovement::Instant => {
-                camera_transform.translation = target.translation + offset;
+                camera_transform.translation = target;
             }
             FollowMovement::Linear(speed) => {
                 camera_transform.translation = move_towards_vec3(
                     camera_transform.translation,
-                    target.translation + offset,
+                    target,
                     speed * time.delta_seconds(),
                 );
             }
             FollowMovement::Smooth(speed) => {
                 camera_transform.translation = vec3_lerp(
                     camera_transform.translation,
-                    target.translation + offset,
+                    target,
                     (speed * time.delta_seconds()).min(1.0),
                 );
             }

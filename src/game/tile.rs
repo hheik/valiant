@@ -1,13 +1,16 @@
-use crate::util::Vector2I;
 use bevy::prelude::*;
+
+use crate::util::Vector2I;
 
 use super::ascii::TILE_SIZE;
 
-pub struct PositionPlugin;
+pub struct TilePlugin;
 
-impl Plugin for PositionPlugin {
+impl Plugin for TilePlugin {
     fn build(&self, app: &mut App) {
-        app.register_type::<Position>().add_system(position_system);
+        app.register_type::<Position>()
+            .register_type::<Collision>()
+            .add_system(position_system);
     }
 }
 
@@ -21,3 +24,7 @@ fn position_system(mut query: Query<(&mut Transform, &Position)>) {
         transform.translation = pos;
     }
 }
+
+#[derive(Component, Reflect, Default)]
+#[reflect(Component)]
+pub struct Collision;

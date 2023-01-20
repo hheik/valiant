@@ -2,16 +2,14 @@ use bevy::prelude::*;
 
 pub mod ascii;
 pub mod camera;
-pub mod collision;
 pub mod debug;
 pub mod default_plugin_setup;
-pub mod position;
+pub mod tile;
 
 use ascii::*;
 use camera::*;
-use collision::*;
 use default_plugin_setup::*;
-use position::*;
+use tile::*;
 
 use crate::util::Vector2I;
 
@@ -23,7 +21,7 @@ pub fn init() {
         .add_plugin(AsciiPlugin)
         .add_plugin(GameCameraPlugin)
         .add_plugin(DebugPlugin)
-        .add_plugin(PositionPlugin)
+        .add_plugin(TilePlugin)
         .add_startup_system(setup_player)
         .add_startup_system(setup_map)
         .run();
@@ -38,6 +36,7 @@ fn setup_player(mut commands: Commands, ascii: Res<AsciiSheet>) {
         .insert(SpriteSheetBundle {
             texture_atlas: ascii.0.clone(),
             sprite,
+            transform: Transform::from_xyz(0.0, 0.0, 10.0),
             ..default()
         })
         .insert(CameraFollow {
@@ -60,7 +59,10 @@ fn setup_map(mut commands: Commands, ascii: Res<AsciiSheet>) {
                     sprite,
                     ..default()
                 })
-                .insert(Name::new(if is_wall { "Wall" } else { "Floor" }))
+                .insert(Name::new(format!(
+                    "{} tile",
+                    if is_wall { "Wall" } else { "Floor" },
+                )))
                 .id();
             if is_wall {
                 commands.get_entity(ent).unwrap().insert(Collision);
