@@ -27,6 +27,9 @@ impl ActorQueue {
     }
 
     pub fn next(&mut self) -> Option<Entity> {
+        if self.registered.len() == 0 {
+            return None;
+        }
         self.current_index = (self.current_index + 1) % self.registered.len();
         self.current_entity()
     }
