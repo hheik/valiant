@@ -1,16 +1,25 @@
 use crate::util::{move_towards_vec3, vec3_lerp};
-use bevy::{prelude::*, render::camera::WindowOrigin};
+use bevy::prelude::*;
 
 pub struct GameCameraPlugin;
 
 impl Plugin for GameCameraPlugin {
     fn build(&self, app: &mut App) {
-        app.register_type::<CameraFollow>()
-            .register_type::<GameCamera>()
-            .add_startup_system(camera_setup)
-            .add_system_to_stage(CoreStage::PostUpdate, camera_system);
+        app.configure_set(
+            CameraSystem
+                .after(CoreSet::PostUpdate)
+                .before(CoreSet::PostUpdateFlush),
+        )
+        .register_type::<CameraFollow>()
+        .register_type::<GameCamera>()
+        .add_startup_system(camera_setup)
+        .add_system(camera_system.in_base_set(CameraSystem));
     }
 }
+
+#[derive(Debug, PartialEq, Eq, Clone, Copy, Hash, SystemSet)]
+#[system_set(base)]
+pub struct CameraSystem;
 
 #[derive(Clone, Copy, PartialEq, Reflect)]
 pub enum FollowMovement {
@@ -41,7 +50,6 @@ fn camera_setup(mut commands: Commands) {
         Name::new("Game Camera"),
         Camera2dBundle {
             projection: OrthographicProjection {
-                window_origin: WindowOrigin::Center,
                 scale: 0.25,
                 ..default()
             },

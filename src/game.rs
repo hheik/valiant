@@ -3,6 +3,7 @@ use bevy::prelude::*;
 pub mod actor;
 pub mod ascii;
 pub mod camera;
+pub mod config;
 pub mod debug;
 pub mod default_plugin_setup;
 pub mod position;
@@ -21,6 +22,8 @@ use self::debug::DebugPlugin;
 
 pub fn init() {
     App::new()
+        .register_type::<config::GameOptions>()
+        .insert_resource(config::GameOptions::default())
         .add_plugin(DefaultPluginSetup)
         .add_plugin(AsciiPlugin)
         .add_plugin(GameCameraPlugin)
