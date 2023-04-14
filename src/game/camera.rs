@@ -1,5 +1,5 @@
 use crate::util::{move_towards_vec3, vec3_lerp};
-use bevy::prelude::*;
+use bevy::{prelude::*, transform::TransformSystem};
 
 pub struct GameCameraPlugin;
 
@@ -7,8 +7,8 @@ impl Plugin for GameCameraPlugin {
     fn build(&self, app: &mut App) {
         app.configure_set(
             CameraSystem
-                .after(CoreSet::PostUpdate)
-                .before(CoreSet::PostUpdateFlush),
+                .after(CoreSet::UpdateFlush)
+                .before(TransformSystem::TransformPropagate),
         )
         .register_type::<CameraFollow>()
         .register_type::<GameCamera>()

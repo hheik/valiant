@@ -1,50 +1,68 @@
 use bevy::prelude::*;
+use bevy_ecs_ldtk::{LdtkWorldBundle, LevelSelection};
 
 pub mod actor;
-pub mod ascii;
 pub mod camera;
 pub mod config;
 pub mod debug;
 pub mod default_plugin_setup;
+pub mod ldtk;
 pub mod position;
 pub mod tile;
 
-use actor::*;
-use ascii::*;
-use camera::*;
-use default_plugin_setup::*;
-use position::*;
-use tile::*;
-
-use crate::util::Vector2I;
-
-use self::debug::DebugPlugin;
+use self::{
+    actor::Actor,
+    camera::*,
+    position::{Position, TILE_SIZE},
+};
 
 pub fn init() {
     App::new()
         .register_type::<config::GameOptions>()
         .insert_resource(config::GameOptions::default())
-        .add_plugin(DefaultPluginSetup)
-        .add_plugin(AsciiPlugin)
-        .add_plugin(GameCameraPlugin)
-        .add_plugin(PositionPlugin)
-        .add_plugin(TilePlugin)
-        .add_plugin(ActorPlugin)
+        .add_plugin(default_plugin_setup::DefaultPluginSetup)
+        .add_plugin(ldtk::LdtkHelperPlugin)
+        .insert_resource(LevelSelection::Index(0))
+        .add_plugin(camera::GameCameraPlugin)
+        .add_plugin(position::PositionPlugin)
+        .add_plugin(tile::TilePlugin)
+        .add_plugin(actor::ActorPlugin)
         .add_startup_system(setup_player)
-        .add_startup_system(setup_map)
-        .add_plugin(DebugPlugin)
+        .add_startup_system(setup_level)
+        // .add_plugin(debug::DebugPlugin)
         .run();
 }
 
-fn setup_player(mut commands: Commands, ascii: Res<AsciiSheet>) {
+fn setup_level(mut commands: Commands, assets: Res<AssetServer>) {
+    commands.spawn(LdtkWorldBundle {
+        ldtk_handle: assets.load("levels/world.ldtk"),
+        ..default()
+    });
+}
+
+fn setup_player(
+    mut commands: Commands,
+    assets: Res<AssetServer>,
+    mut atlases: ResMut<Assets<TextureAtlas>>,
+) {
+    let atlas = TextureAtlas::from_grid(
+        assets.load("sprites/adventurer_1.png"),
+        Vec2::splat(TILE_SIZE),
+        1,
+        1,
+        Some(Vec2::splat(0.0)),
+        Some(Vec2::splat(0.0)),
+    );
+    let atlas_handle = atlases.add(atlas);
+
     commands
         .spawn(Actor)
-        .insert(Position(Vector2I::new(1, 0)))
+        .insert(Position::new(11, 4))
         .insert(SpriteSheetBundle {
-            texture_atlas: ascii.0.clone(),
+            texture_atlas: atlas_handle,
             sprite: TextureAtlasSprite {
-                color: Color::BLUE,
-                ..TextureAtlasSprite::new(1)
+                anchor: bevy::sprite::Anchor::BottomLeft,
+                ..TextureAtlasSprite::new(0)
             },
             transform: Transform::from_xyz(0.0, 0.0, 10.0),
             ..default()
@@ -54,47 +72,4 @@ fn setup_player(mut commands: Commands, ascii: Res<AsciiSheet>) {
             priority: 1,
         })
         .insert(Name::new("Player 1"));
-
-    commands
-        .spawn(Actor)
-        .insert(Position(Vector2I::new(3, -2)))
-        .insert(SpriteSheetBundle {
-            texture_atlas: ascii.0.clone(),
-            sprite: TextureAtlasSprite {
-                color: Color::RED,
-                ..TextureAtlasSprite::new(2)
-            },
-            transform: Transform::from_xyz(0.0, 0.0, 10.0),
-            ..default()
-        })
-        .insert(CameraFollow {
-            movement: FollowMovement::Instant,
-            priority: 0,
-        })
-        .insert(Name::new("Player 2"));
-}
-
-fn setup_map(mut commands: Commands, ascii: Res<AsciiSheet>) {
-    for y in -4..4 {
-        for x in -7..7 {
-            let is_wall = y == -4 || y == 3 || x == -7 || x == 6;
-            let mut sprite = TextureAtlasSprite::new(if is_wall { 219 } else { 22 });
-            sprite.color = Color::GRAY;
-            let ent = commands
-                .spawn(Position(Vector2I::new(x, y)))
-                .insert(SpriteSheetBundle {
-                    texture_atlas: ascii.0.clone(),
-                    sprite,
-                    ..default()
-                })
-                .insert(Name::new(format!(
-                    "{} tile",
-                    if is_wall { "Wall" } else { "Floor" },
-                )))
-                .id();
-            if is_wall {
-                commands.get_entity(ent).unwrap().insert(Collision);
-            }
-        }
-    }
 }

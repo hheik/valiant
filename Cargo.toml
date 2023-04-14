@@ -5,7 +5,10 @@ edition = "2021"
 
 [dependencies]
 bevy = "0.10.1"
+# bevy = { path = "../bevy" }
 bevy-inspector-egui = "0.18.3"
+bevy_ecs_ldtk = { version = "0.6.0", features = ["derive", "atlas"] }
+# bevy_ecs_ldtk = { path = "../bevy_ecs_ldtk", features = ["derive", "atlas"] }
 
 # Enable a small amount of optimization in debug mode
 [profile.dev]
