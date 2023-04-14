@@ -1,5 +1,6 @@
 use crate::util::{move_towards_vec3, vec3_lerp};
 use bevy::{prelude::*, transform::TransformSystem};
+use bevy_ecs_ldtk::prelude::*;
 
 pub struct GameCameraPlugin;
 
@@ -13,7 +14,11 @@ impl Plugin for GameCameraPlugin {
         .register_type::<CameraFollow>()
         .register_type::<GameCamera>()
         .add_startup_system(camera_setup)
-        .add_system(camera_system.in_base_set(CameraSystem));
+        .add_systems(
+            (camera_system, room_restraint)
+                .chain()
+                .in_base_set(CameraSystem),
+        );
     }
 }
 
@@ -45,6 +50,9 @@ pub struct CameraFollow {
     pub movement: FollowMovement,
 }
 
+#[derive(Default, Component)]
+pub struct CameraRoomRestraint;
+
 fn camera_setup(mut commands: Commands) {
     commands.spawn((
         Name::new("Game Camera"),
@@ -61,6 +69,7 @@ fn camera_setup(mut commands: Commands) {
             ..default()
         },
         GameCamera,
+        CameraRoomRestraint,
     ));
 }
 
@@ -100,6 +109,40 @@ fn camera_system(
                     target,
                     (speed * time.delta_seconds()).min(1.0),
                 );
+            }
+        }
+    }
+}
+
+fn room_restraint(
+    mut camera_query: Query<(&mut Transform, &OrthographicProjection), With<CameraRoomRestraint>>,
+    level_query: Query<(&GlobalTransform, &Handle<LdtkLevel>), Without<OrthographicProjection>>,
+    level_selection: Res<LevelSelection>,
+    ldtk_levels: Res<Assets<LdtkLevel>>,
+) {
+    for (mut camera_transform, projection) in camera_query.iter_mut() {
+        for (level_transform, level_handle) in &level_query {
+            if let Some(ldtk_level) = ldtk_levels.get(level_handle) {
+                let level = &ldtk_level.level;
+                if level_selection.is_match(&0, level) {
+                    let top = camera_transform.translation.y + projection.area.max.y;
+                    let bottom = camera_transform.translation.y + projection.area.min.y;
+                    let left = camera_transform.translation.x + projection.area.min.x;
+                    let right = camera_transform.translation.x + projection.area.max.x;
+
+                    let top_limit = level_transform.translation().y + level.px_hei as f32;
+                    let bottom_limit = level_transform.translation().y;
+                    let left_limit = level_transform.translation().x;
+                    let right_limit = level_transform.translation().x + level.px_wid as f32;
+
+                    let top_move = (top_limit - top).min(0.0);
+                    let bottom_move = (bottom_limit - bottom).max(0.0);
+                    let left_move = (left_limit - left).max(0.0);
+                    let right_move = (right_limit - right).min(0.0);
+
+                    camera_transform.translation.x += left_move + right_move;
+                    camera_transform.translation.y += top_move + bottom_move;
+                }
             }
         }
     }
