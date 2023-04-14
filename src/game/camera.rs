@@ -1,5 +1,5 @@
 use crate::util::{move_towards_vec3, vec3_lerp};
-use bevy::{prelude::*, transform::TransformSystem};
+use bevy::{input::mouse::MouseMotion, prelude::*, transform::TransformSystem};
 use bevy_ecs_ldtk::prelude::*;
 
 pub struct GameCameraPlugin;
@@ -15,7 +15,7 @@ impl Plugin for GameCameraPlugin {
         .register_type::<GameCamera>()
         .add_startup_system(camera_setup)
         .add_systems(
-            (camera_system, room_restraint)
+            (camera_mode_system, room_restraint)
                 .chain()
                 .in_base_set(CameraSystem),
         );
@@ -41,7 +41,16 @@ impl Default for FollowMovement {
 
 #[derive(Default, Component, Reflect)]
 #[reflect(Component)]
-pub struct GameCamera;
+pub struct GameCamera {
+    pub mode: CameraMode,
+}
+
+#[derive(Default, Reflect)]
+pub enum CameraMode {
+    #[default]
+    Free,
+    Follow,
+}
 
 #[derive(Default, Component, Reflect)]
 #[reflect(Component)]
@@ -68,47 +77,62 @@ fn camera_setup(mut commands: Commands) {
             },
             ..default()
         },
-        GameCamera,
+        GameCamera::default(),
         CameraRoomRestraint,
     ));
 }
 
-fn camera_system(
+fn camera_mode_system(
     time: Res<Time>,
-    mut camera_query: Query<&mut Transform, With<Camera2d>>,
+    mut camera_query: Query<
+        (&mut Transform, &mut GameCamera, &OrthographicProjection),
+        With<Camera2d>,
+    >,
     follow_query: Query<(&Transform, &CameraFollow), Without<Camera2d>>,
+    mouse_input: Res<Input<MouseButton>>,
+    mut mouse_events: EventReader<MouseMotion>,
+    key_input: Res<Input<KeyCode>>,
 ) {
-    let (target, follow) = match follow_query
-        .iter()
-        .max_by_key(|(_transform, follow)| follow.priority)
-    {
-        Some(followed) => followed,
-        None => return,
-    };
+    let raw_mouse_motion: Vec2 = mouse_events.iter().map(|e| e.delta).sum();
 
-    let target = Vec3 {
-        z: 999.9,
-        ..target.translation
-    };
+    for (mut camera_transform, mut camera, projection) in camera_query.iter_mut() {
+        if key_input.just_pressed(KeyCode::Tab) {
+            camera.mode = CameraMode::Follow
+        }
 
-    for mut camera_transform in camera_query.iter_mut() {
-        match follow.movement {
-            FollowMovement::Instant => {
-                camera_transform.translation = target;
+        match camera.mode {
+            CameraMode::Free => {
+                let mouse_motion = raw_mouse_motion * projection.scale * Vec2::new(-1.0, 1.0);
+                if mouse_input.pressed(MouseButton::Middle) {
+                    input_movement(&mut camera_transform, mouse_motion)
+                }
             }
-            FollowMovement::Linear(speed) => {
-                camera_transform.translation = move_towards_vec3(
-                    camera_transform.translation,
+            CameraMode::Follow => {
+                if mouse_input.pressed(MouseButton::Middle)
+                    && raw_mouse_motion.abs_diff_eq(Vec2::ZERO, 0.001)
+                {
+                    camera.mode = CameraMode::Free
+                }
+
+                let (target, follow) = match follow_query
+                    .iter()
+                    .max_by_key(|(_transform, follow)| follow.priority)
+                {
+                    Some((target, follow)) => (target, follow),
+                    None => return,
+                };
+
+                let target = Vec3 {
+                    z: 999.9,
+                    ..target.translation
+                };
+
+                follow_movement(
+                    &mut camera_transform,
+                    &follow.movement,
                     target,
-                    speed * time.delta_seconds(),
-                );
-            }
-            FollowMovement::Smooth(speed) => {
-                camera_transform.translation = vec3_lerp(
-                    camera_transform.translation,
-                    target,
-                    (speed * time.delta_seconds()).min(1.0),
-                );
+                    time.delta_seconds(),
+                )
             }
         }
     }
@@ -146,4 +170,29 @@ fn room_restraint(
             }
         }
     }
+}
+
+fn follow_movement(
+    transform: &mut Transform,
+    movement: &FollowMovement,
+    target: Vec3,
+    delta_time: f32,
+) {
+    match movement {
+        FollowMovement::Instant => {
+            transform.translation = target;
+        }
+        FollowMovement::Linear(speed) => {
+            transform.translation =
+                move_towards_vec3(transform.translation, target, speed * delta_time);
+        }
+        FollowMovement::Smooth(speed) => {
+            transform.translation =
+                vec3_lerp(transform.translation, target, (speed * delta_time).min(1.0));
+        }
+    }
+}
+
+fn input_movement(transform: &mut Transform, movement: Vec2) {
+    transform.translation += movement.extend(0.0);
 }
