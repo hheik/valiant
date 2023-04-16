@@ -22,9 +22,15 @@ impl Position {
     }
 }
 
+impl From<IVec2> for Position {
+    fn from(value: IVec2) -> Self {
+        Self(Vector2I::from(value))
+    }
+}
+
 fn position_system(mut query: Query<(&mut Transform, &Position)>) {
     for (mut transform, position) in query.iter_mut() {
-        let pos = Vec3::from(position.0) * TILE_SIZE + Vec3::new(0.0, 0.0, transform.translation.z);
-        transform.translation = pos;
+        transform.translation.x = position.0.x as f32 * TILE_SIZE;
+        transform.translation.y = position.0.y as f32 * TILE_SIZE;
     }
 }

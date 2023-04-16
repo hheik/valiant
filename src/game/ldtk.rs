@@ -3,7 +3,18 @@ use bevy::prelude::*;
 use bevy::utils::HashMap;
 use bevy_ecs_ldtk::prelude::*;
 
+use crate::util::Vector2I;
+
 pub struct LdtkHelperPlugin;
+
+impl From<IVec2> for Vector2I {
+    fn from(value: IVec2) -> Self {
+        Self {
+            x: value.x,
+            y: value.y,
+        }
+    }
+}
 
 impl Plugin for LdtkHelperPlugin {
     fn build(&self, app: &mut App) {
@@ -91,5 +102,37 @@ fn unique_handler(
         worldly_instances
             .def_uid_map
             .insert(instance.def_uid, entity);
+    }
+}
+
+pub trait FieldValueGetter {
+    fn find_string(&self, identifier: &str) -> Option<String>;
+    fn find_i32(&self, identifier: &str) -> Option<i32>;
+}
+
+impl FieldValueGetter for EntityInstance {
+    fn find_string(&self, identifier: &str) -> Option<String> {
+        match self
+            .field_instances
+            .iter()
+            .find(|fi| fi.identifier.as_str() == identifier)?
+            .value
+            .clone()
+        {
+            FieldValue::String(value) => value,
+            _ => None,
+        }
+    }
+
+    fn find_i32(&self, identifier: &str) -> Option<i32> {
+        match self
+            .field_instances
+            .iter()
+            .find(|fi| fi.identifier.as_str() == identifier)?
+            .value
+        {
+            FieldValue::Int(value) => value,
+            _ => None,
+        }
     }
 }

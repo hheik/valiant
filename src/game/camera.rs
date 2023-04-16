@@ -88,7 +88,7 @@ fn camera_mode_system(
         (&mut Transform, &mut GameCamera, &OrthographicProjection),
         With<Camera2d>,
     >,
-    follow_query: Query<(&Transform, &CameraFollow), Without<Camera2d>>,
+    follow_query: Query<(&GlobalTransform, &CameraFollow), Without<Camera2d>>,
     mouse_input: Res<Input<MouseButton>>,
     mut mouse_events: EventReader<MouseMotion>,
     key_input: Res<Input<KeyCode>>,
@@ -124,7 +124,7 @@ fn camera_mode_system(
 
                 let target = Vec3 {
                     z: 999.9,
-                    ..target.translation
+                    ..target.translation()
                 };
 
                 follow_movement(
