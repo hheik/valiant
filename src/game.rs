@@ -7,6 +7,7 @@ pub mod camera;
 pub mod config;
 pub mod debug;
 pub mod default_plugin_setup;
+pub mod enemy;
 pub mod ldtk;
 pub mod position;
 pub mod tile;
@@ -23,8 +24,9 @@ pub fn init() {
         .add_plugin(tile::TilePlugin)
         .add_plugin(actor::ActorPlugin)
         .add_plugin(adventurer::AdventurerPlugin)
+        .add_plugin(enemy::EnemyPlugin)
         .add_startup_system(setup_level)
-        // .add_plugin(debug::DebugPlugin)
+        .add_plugin(debug::DebugPlugin)
         .run();
 }
 

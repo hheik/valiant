@@ -5,36 +5,25 @@ use crate::util::Vector2I;
 
 use super::{
     actor::Actor,
+    adventurer::{Adventurer, BaseStats},
     camera::CameraFollow,
     ldtk::{EntityInstanceAdded, FieldValueGetter},
     position::{Position, TILE_SIZE},
 };
 
-pub struct AdventurerPlugin;
+pub struct EnemyPlugin;
 
-impl Plugin for AdventurerPlugin {
+impl Plugin for EnemyPlugin {
     fn build(&self, app: &mut App) {
-        app.register_type::<Adventurer>()
-            .add_system(adventurer_spawner);
+        app.register_type::<Enemy>().add_system(enemy_spawner);
     }
 }
 
 #[derive(Reflect, Component, Default)]
 #[reflect(Component)]
-pub struct BaseStats {
-    pub spirit: i32,
-    pub intellect: i32,
-    pub power: i32,
-    pub stealth: i32,
-}
+pub struct Enemy {}
 
-#[derive(Reflect, Component, Default)]
-#[reflect(Component)]
-pub struct Adventurer {
-    pub name: String,
-}
-
-fn adventurer_spawner(
+fn enemy_spawner(
     mut commands: Commands,
     mut events: EventReader<EntityInstanceAdded>,
     assets: Res<AssetServer>,
@@ -44,10 +33,7 @@ fn adventurer_spawner(
     level_query: Query<&Handle<LdtkLevel>>,
     ldtk_levels: Res<Assets<LdtkLevel>>,
 ) {
-    for event in events
-        .iter()
-        .filter(|e| e.instance.identifier == "ADVENTURER")
-    {
+    for event in events.iter().filter(|e| e.instance.identifier == "ENEMY") {
         let instance = &event.instance;
 
         let parent = match parent_query.get(event.entity) {
@@ -85,7 +71,7 @@ fn adventurer_spawner(
 
         commands.entity(parent.get()).with_children(|builder| {
             let atlas = TextureAtlas::from_grid(
-                assets.load("sprites/adventurers.png"),
+                assets.load("sprites/enemies.png"),
                 Vec2::splat(16.),
                 1,
                 1,
@@ -95,7 +81,7 @@ fn adventurer_spawner(
             let atlas_handle = atlases.add(atlas);
             let name = instance
                 .find_string("NAME")
-                .unwrap_or("<adventurer>".to_string());
+                .unwrap_or("<enemy>".to_string());
 
             builder.spawn((
                 SpriteSheetBundle {
@@ -109,14 +95,16 @@ fn adventurer_spawner(
                     ..default()
                 },
                 position,
-                Adventurer { name: name.clone() },
-                BaseStats {
-                    spirit: instance.find_i32("SPIRIT").unwrap_or(0),
-                    intellect: instance.find_i32("INTELLECT").unwrap_or(0),
-                    power: instance.find_i32("POWER").unwrap_or(0),
-                    stealth: instance.find_i32("STEALTH").unwrap_or(0),
-                },
-                Actor::default(),
+                // Adventurer {
+                //     name: name.clone(),
+                //     base_stats: BaseStats {
+                //         spirit: instance.find_i32("SPIRIT").unwrap_or(0),
+                //         intellect: instance.find_i32("INTELLECT").unwrap_or(0),
+                //         power: instance.find_i32("POWER").unwrap_or(0),
+                //         stealth: instance.find_i32("STEALTH").unwrap_or(0),
+                //     },
+                // },
+                // Actor::default(),
                 CameraFollow::default(),
                 Name::new(name.clone()),
             ));

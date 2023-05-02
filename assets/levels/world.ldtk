@@ -11,7 +11,7 @@
 	"iid": "c848f460-c640-11ed-8884-f19f2bf31be0",
 	"jsonVersion": "1.2.5",
 	"appBuildId": 464870,
-	"nextUid": 183,
+	"nextUid": 187,
 	"identifierStyle": "Uppercase",
 	"toc": [],
 	"worldLayout": "Free",
@@ -1329,7 +1329,7 @@
 			"fillOpacity": 1,
 			"lineOpacity": 1,
 			"hollow": false,
-			"color": "#BE4A2F",
+			"color": "#3E8948",
 			"renderMode": "Rectangle",
 			"showName": false,
 			"tilesetId": null,
@@ -1538,6 +1538,71 @@
 					"tilesetUid": null
 				}
 			]
+		},
+		{
+			"identifier": "ENEMY",
+			"uid": 183,
+			"tags": [],
+			"exportToToc": false,
+			"doc": null,
+			"width": 16,
+			"height": 16,
+			"resizableX": false,
+			"resizableY": false,
+			"keepAspectRatio": false,
+			"tileOpacity": 1,
+			"fillOpacity": 1,
+			"lineOpacity": 1,
+			"hollow": false,
+			"color": "#FF0044",
+			"renderMode": "Rectangle",
+			"showName": true,
+			"tilesetId": null,
+			"tileRenderMode": "FitInside",
+			"tileRect": null,
+			"nineSliceBorders": [],
+			"maxCount": 0,
+			"limitScope": "PerLevel",
+			"limitBehavior": "MoveLastOne",
+			"pivotX": 0,
+			"pivotY": 0,
+			"fieldDefs": [
+				{
+					"identifier": "ENEMIES",
+					"doc": null,
+					"__type": "LocalEnum.ENEMIES",
+					"uid": 186,
+					"type": "F_Enum(184)",
+					"isArray": false,
+					"canBeNull": false,
+					"arrayMinLength": null,
+					"arrayMaxLength": null,
+					"editorDisplayMode": "EntityTile",
+					"editorDisplayPos": "Above",
+					"editorLinkStyle": "StraightArrow",
+					"editorAlwaysShow": false,
+					"editorShowInWorld": true,
+					"editorCutLongValues": true,
+					"editorTextSuffix": null,
+					"editorTextPrefix": null,
+					"useForSmartColor": false,
+					"min": null,
+					"max": null,
+					"regex": null,
+					"acceptFileTypes": null,
+					"defaultOverride": {
+						"id": "V_String",
+						"params": ["GOBLIN"]
+					},
+					"textLanguageMode": null,
+					"symmetricalRef": false,
+					"autoChainRef": true,
+					"allowOutOfLevelRef": true,
+					"allowedRefs": "OnlySame",
+					"allowedRefTags": [],
+					"tilesetUid": null
+				}
+			]
 		}
 	], "tilesets": [
 		{
@@ -1580,8 +1645,27 @@
 			"customData": [],
 			"savedSelections": [],
 			"cachedPixelData": { "opaqueTiles": "0", "averageColors": "7556" }
+		},
+		{
+			"__cWid": 1,
+			"__cHei": 1,
+			"identifier": "ENEMIES",
+			"uid": 185,
+			"relPath": "../sprites/enemies.png",
+			"embedAtlas": null,
+			"pxWid": 16,
+			"pxHei": 16,
+			"tileGridSize": 16,
+			"spacing": 0,
+			"padding": 0,
+			"tags": [],
+			"tagsSourceEnumUid": null,
+			"enumTags": [],
+			"customData": [],
+			"savedSelections": [],
+			"cachedPixelData": { "opaqueTiles": "0", "averageColors": "8465" }
 		}
-	], "enums": [], "externalEnums": [], "levelFields": [] },
+	], "enums": [{ "identifier": "ENEMIES", "uid": 184, "values": [{ "id": "GOBLIN", "tileId": 0, "color": 3958358, "__tileSrcRect": [0,0,16,16] }], "iconTilesetUid": 185, "externalRelPath": null, "externalFileChecksum": null, "tags": [] }], "externalEnums": [], "levelFields": [] },
 	"levels": [
 		{
 			"identifier": "LEVEL_0",
@@ -1648,7 +1732,7 @@
 							"__pivot": [0,0],
 							"__tags": [],
 							"__tile": { "tilesetUid": 176, "x": 0, "y": 0, "w": 16, "h": 16 },
-							"__smartColor": "#BE4A2F",
+							"__smartColor": "#3E8948",
 							"iid": "e3cc1ad0-c640-11ed-9f80-059f7c89b0de",
 							"width": 16,
 							"height": 16,
@@ -1672,7 +1756,7 @@
 							"__pivot": [0,0],
 							"__tags": [],
 							"__tile": { "tilesetUid": 176, "x": 0, "y": 0, "w": 16, "h": 16 },
-							"__smartColor": "#BE4A2F",
+							"__smartColor": "#3E8948",
 							"iid": "dee80280-c640-11ed-9f80-1b3c26437df3",
 							"width": 16,
 							"height": 16,
@@ -1689,6 +1773,23 @@
 								{ "__identifier": "POWER", "__value": 4, "__type": "Int", "__tile": null, "defUid": 181, "realEditorValues": [{ "id": "V_Int", "params": [4] }] },
 								{ "__identifier": "STEALTH", "__value": 2, "__type": "Int", "__tile": null, "defUid": 182, "realEditorValues": [{ "id": "V_Int", "params": [2] }] }
 							]
+						},
+						{
+							"__identifier": "ENEMY",
+							"__grid": [5,10],
+							"__pivot": [0,0],
+							"__tags": [],
+							"__tile": { "tilesetUid": 185, "x": 0, "y": 0, "w": 16, "h": 16 },
+							"__smartColor": "#FF0044",
+							"iid": "50d961f0-c640-11ed-ad83-f78c2c53c3de",
+							"width": 16,
+							"height": 16,
+							"defUid": 183,
+							"px": [80,160],
+							"fieldInstances": [{ "__identifier": "ENEMIES", "__value": "GOBLIN", "__type": "LocalEnum.ENEMIES", "__tile": { "tilesetUid": 185, "x": 0, "y": 0, "w": 16, "h": 16 }, "defUid": 186, "realEditorValues": [{
+								"id": "V_String",
+								"params": ["GOBLIN"]
+							}] }]
 						}
 					]
 				},
